@@ -16,7 +16,7 @@ pipeline {
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
     // get git repo tag
-    GIT_TAG = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags 2>/dev/null').trim()
+    GIT_TAG = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags').trim()
   }
   parameters { 
     string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
