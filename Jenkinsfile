@@ -1,3 +1,5 @@
+def GIT_TAG = ''
+
 pipeline {
   agent {
     kubernetes {
@@ -15,8 +17,6 @@ pipeline {
     PROJECT_NAME = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
-    // get git repo tag
-    GIT_TAG = sh(returnStdout: true, script: 'git tag --sort version:refname | tail -1').trim()
   }
   parameters { 
     string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
@@ -41,6 +41,9 @@ pipeline {
               sh 'make --version'
               sh 'git version'
               sh 'go env'
+              script {
+               GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
+              }
             }
           }
         }
