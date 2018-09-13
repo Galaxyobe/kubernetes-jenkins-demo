@@ -1,0 +1,35 @@
+metadata:
+  labels:
+    golang: 1.11.0-stretch
+    alpine3: 3.7
+spec:
+  containers:
+  - name: jnlp
+    image: jenkinsci/jnlp-slave
+    env:
+    - name: CONTAINER_ENV_VAR
+      value: jnlp
+  - name: golang
+    image: golang:1.11.0-stretch
+    command:
+    - cat
+    tty: true
+    # privileged: true
+    env:
+    - name: CONTAINER_ENV_VAR
+      value: golang
+  - name: docker
+    image: docker
+    command:
+    - cat
+    tty: true
+    env:
+    - name: CONTAINER_ENV_VAR
+      value: docker
+    volumeMounts:
+    - name: docker-socket
+      mountPath: /var/run/docker.sock
+  volumes:
+  - name: docker-socket
+    hostPath:
+      path: /var/run/docker.sock 
