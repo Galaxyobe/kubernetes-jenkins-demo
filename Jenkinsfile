@@ -15,7 +15,8 @@ pipeline {
     PROJECT_NAME = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
   }
   parameters { 
-    string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry') 
+    string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
+    string(name: 'DOCKER_REPO', defaultValue: 'demo', description: 'docker registry repo kind')
   }
   stages {
     stage('环境') {
@@ -82,12 +83,20 @@ pipeline {
     } 
     stage('Docker') {
       steps {
-        container('docker') {
+        container('docker') { 
           sh """
-            echo "${params.DOCKER_REGISTRY}"
+            name=${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}
+            now=$(date '+%Y%m%d%I%M%S')
+            tag=${GIT_COMMIT::7}
+            
+            
+            docker build . --tag ${name}:${tag} \
+                           --tag ${name}:${tag}-${now}
+
+            docker images
+
+            docker rmi -f ${name}:${tag} ${name}:${tag}-${now}
           """
-          sh 'docker build . --tag ${PROJECT_NAME}:${GIT_COMMIT::7}'
-          sh 'docker images'
         }
       }
     }
