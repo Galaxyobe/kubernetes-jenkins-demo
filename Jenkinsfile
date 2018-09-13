@@ -85,13 +85,13 @@ pipeline {
       steps {
         container('docker') { 
           sh """
-            now=$(date '+%Y%m%d%I%M%S')
+            now="$(date '+%Y%m%d%I%M%S')"
 
-            name=${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}
-            tag=${GIT_COMMIT::7}
+            name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
+            tag="${GIT_COMMIT::7}"
 
             if [ ${GIT_BRANCH} != master ]; then
-              tag=${tag}-${GIT_BRANCH}
+              tag="${tag}-${GIT_BRANCH}"
             fi
             
             docker build . --tag ${name}:${tag} \
