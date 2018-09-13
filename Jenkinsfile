@@ -83,9 +83,9 @@ pipeline {
     stage('Docker') {
       steps {
         container('docker') {
-          sh '''
-            echo '${params.DOCKER_REGISTRY}'
-          '''
+          sh """
+            echo "${params.DOCKER_REGISTRY}"
+          """
           sh 'docker build . --tag ${PROJECT_NAME}:${GIT_COMMIT::7}'
           sh 'docker images'
         }
