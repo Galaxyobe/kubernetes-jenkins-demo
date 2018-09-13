@@ -85,8 +85,6 @@ pipeline {
       steps {
         container('docker') { 
           sh """
-            now="$(date '+%Y%m%d%I%M%S')"
-
             name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
             tag="${GIT_COMMIT::7}"
 
