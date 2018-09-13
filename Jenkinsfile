@@ -15,8 +15,6 @@ pipeline {
     PROJECT_NAME = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
-    // get git repo tag
-    GIT_TAG = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags').trim()
   }
   parameters { 
     string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
@@ -90,7 +88,7 @@ pipeline {
         container('docker') {
           sh """
             echo "${NOW}"
-            echo "${GIT_TAG}"
+            echo "${TAG_NAME}"
             name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
             tag="${GIT_COMMIT}"
 
