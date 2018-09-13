@@ -1,3 +1,7 @@
+import java.text.*
+
+def now = new SimpleDateFormat("yyyyMMddHHmmss")
+
 pipeline {
   agent {
     kubernetes {
@@ -84,7 +88,6 @@ pipeline {
     stage('Docker') {
       steps {
         container('docker') {
-          now = sh(returnStdout: true, script: 'date \'+%Y%m%d%I%M%S\'').trim()
           sh """
             echo "${now}"
             name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
