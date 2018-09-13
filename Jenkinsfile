@@ -83,11 +83,12 @@ pipeline {
     } 
     stage('Docker') {
       steps {
-        container('docker') { 
+        container('docker') {
+          now = sh(returnStdout: true, script: 'date '+%Y%m%d%I%M%S').trim() 
           sh """
+            echo "${now}"
             name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
             tag="${GIT_COMMIT:0:7}"
-            now=sh(returnStdout: true, script: 'date '+%Y%m%d%I%M%S').trim()
 
             if [ ${GIT_BRANCH} != master ]; then
               tag="${tag}-${GIT_BRANCH}"
