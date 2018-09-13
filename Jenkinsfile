@@ -51,6 +51,8 @@ pipeline {
     }
     stage('安装依赖包') {
       steps {
+        echo "${NOW}"
+        echo "${GIT_TAG}"
         container('golang') {
           sh 'make install-package'
         }
