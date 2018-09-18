@@ -1,3 +1,5 @@
+def GIT_TAG = ''
+
 pipeline {
   agent {
     kubernetes {
@@ -15,11 +17,9 @@ pipeline {
     // PROJECT_PATH = sh(returnStdout: true, script: 'echo ${GIT_URL#*//} | cut -d '.' -f 1-2').trim()
     
     // get the project name
-    PROJECT_NAME = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
+    PROJECT_NAME = sh(returnStdout: true, script: 'dirname ${JOB_NAME}').trim()
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
-    // get the git tag 
-    GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
   }
   parameters { 
     string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
@@ -35,6 +35,10 @@ pipeline {
           extensions: scm.extensions + [[$class: 'CleanCheckout'], [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''], [$class: 'LocalBranch', localBranch: '**']],
           userRemoteConfigs: scm.userRemoteConfigs,
         ]
+        script {
+          // get the git tag 
+          GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
+        }
       }
     }
     stage('环境') {
@@ -55,9 +59,20 @@ pipeline {
               sh 'make --version'
               sh 'git version'
               sh 'go env'
-              script {
-               GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
-              }
+            }
+          }
+        }
+        stage('Docker') {
+          steps {
+            container('docker') {
+              sh 'set'
+              sh 'pwd'
+              sh 'ls -al'
+              sh 'echo now: ${NOW}'
+              sh 'echo tag: ${GIT_TAG}'
+              sh 'echo registry: ${params.DOCKER_REGISTRY}'
+              sh 'echo repo: ${params.DOCKER_REPO}'
+              sh 'echo project name: ${PROJECT_NAME}'
             }
           }
         }
@@ -65,8 +80,6 @@ pipeline {
     }
     stage('安装依赖包') {
       steps {
-        echo "${NOW}"
-        echo "${GIT_TAG}"
         container('golang') {
           sh 'make install-package'
         }
@@ -108,10 +121,8 @@ pipeline {
       steps {
         container('docker') {
           sh """
-            echo "${NOW}"
-            echo "${GIT_TAG}"
             name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
-            tag="${GIT_COMMIT}"
+            tag="${GIT_TAG}"
 
             if [ ${GIT_BRANCH} != master ]; then
               tag="${tag}-${GIT_BRANCH}"
