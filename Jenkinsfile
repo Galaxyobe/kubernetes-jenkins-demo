@@ -32,7 +32,7 @@ pipeline {
           $class: 'GitSCM',
           branches: scm.branches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: scm.extensions + [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''], [$class: 'LocalBranch', localBranch: '**']],
+          extensions: scm.extensions + [[$class: 'CleanCheckout'], [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''], [$class: 'LocalBranch', localBranch: '**']],
           userRemoteConfigs: scm.userRemoteConfigs,
         ]
       }
