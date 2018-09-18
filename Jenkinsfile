@@ -138,16 +138,21 @@ pipeline {
               tag = tag + "-" + env.GIT_BRANCH
             }
 
-            println(name)
-            println(tag)
-            println(commit)
+            def build_name = name + ":" + tag
+            def tag2 = tag + "-" + now
 
-            def build_name1 = name + ":" + tag
-            def build_name2 = name + ":" + tag + "-" + now
-
-            docker build . --tag build_name1 --tag build_name2
-
-            docker rmi -f build_name1 build_name2
+            def image = docker.build(build_name)
+            try {
+              docker.withRegistry("https://docker.bb-app.cn", "docker.bb-app.cn") {
+                image.push()
+                image.push(tag2)
+                if (env.GIT_BRANCH == "master"){
+                  image.push('latest')
+                } 
+              }
+            } finally {
+              sh "docker rmi -f ${image.id}"
+            }
           }
         }
       }
