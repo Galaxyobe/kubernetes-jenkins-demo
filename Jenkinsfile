@@ -1,5 +1,3 @@
-def GIT_TAG = ''
-
 pipeline {
   agent {
     kubernetes {
@@ -20,6 +18,8 @@ pipeline {
     PROJECT_NAME = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
+    // get the git tag 
+    GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
   }
   parameters { 
     string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
@@ -32,7 +32,7 @@ pipeline {
           $class: 'GitSCM',
           branches: scm.branches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
+          extensions: scm.extensions + [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''], [$class: 'LocalBranch', localBranch: '**']],
           userRemoteConfigs: scm.userRemoteConfigs,
         ]
       }
