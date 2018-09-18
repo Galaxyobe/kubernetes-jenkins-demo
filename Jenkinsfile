@@ -68,11 +68,11 @@ pipeline {
               sh 'set'
               sh 'pwd'
               sh 'ls -al'
-              sh 'echo now: ${NOW}'
-              sh 'echo tag: ${GIT_TAG}'
-              sh 'echo registry: ${params.DOCKER_REGISTRY}'
-              sh 'echo repo: ${params.DOCKER_REPO}'
-              sh 'echo project name: ${PROJECT_NAME}'
+              echo "now: ${NOW}"
+              echo "tag: ${GIT_TAG}"
+              echo "project name: ${PROJECT_NAME}"
+              echo "docker registry: ${params.DOCKER_REGISTRY}"
+              echo "docker repo: ${params.DOCKER_REPO}" 
             }
           }
         }
