@@ -1,5 +1,3 @@
-def GIT_TAG = ''
-
 pipeline {
   agent {
     kubernetes {
@@ -15,9 +13,7 @@ pipeline {
     // PROJECT_PATH = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
     // get the project path from src/*/...
     // PROJECT_PATH = sh(returnStdout: true, script: 'echo ${GIT_URL#*//} | cut -d '.' -f 1-2').trim()
-    
-    // get the project name
-    PROJECT_NAME = sh(returnStdout: true, script: 'dirname ${JOB_NAME}').trim()
+
     // get the date
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
   }
@@ -28,16 +24,24 @@ pipeline {
   stages {
     stage('检出代码') {
       steps {
-        checkout scm: [
-          $class: 'GitSCM',
-          branches: scm.branches,
-          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: scm.extensions + [[$class: 'CleanCheckout'], [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''], [$class: 'LocalBranch', localBranch: '**']],
-          userRemoteConfigs: scm.userRemoteConfigs,
-        ]
         script {
+          checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions: scm.extensions + [
+              [$class: 'CleanCheckout'],
+              [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: ''],
+              [$class: 'LocalBranch', localBranch: '**']
+            ],
+            userRemoteConfigs: scm.userRemoteConfigs,
+          ]).each { 
+            k,v -> env.setProperty(k, v) 
+          }
+          // get the project name
+          env.setProperty("PROJECT_NAME", sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim())
           // get the git tag 
-          GIT_TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
+          env.setProperty("GIT_TAG", sh(returnStdout: true, script: "git tag --contains | head -1").trim())
         }
       }
     }
@@ -72,7 +76,7 @@ pipeline {
               echo "tag: ${GIT_TAG}"
               echo "project name: ${PROJECT_NAME}"
               echo "docker registry: ${params.DOCKER_REGISTRY}"
-              echo "docker repo: ${params.DOCKER_REPO}" 
+              echo "docker repo: ${params.DOCKER_REPO}"
             }
           }
         }
@@ -120,21 +124,31 @@ pipeline {
     stage('Docker') {
       steps {
         container('docker') {
-          sh """
-            name="${params.DOCKER_REGISTRY}/${params.DOCKER_REPO}/${PROJECT_NAME}"
-            tag="${GIT_TAG}"
+          script {
+            def name = params.DOCKER_REGISTRY + "/" + params.DOCKER_REPO + "/" + env.PROJECT_NAME
+            def tag = env.GIT_TAG
+            def commit = env.GIT_COMMIT
+            def now = env.NOW
 
-            if [ ${GIT_BRANCH} != master ]; then
-              tag="${tag}-${GIT_BRANCH}"
-            fi
-            
-            docker build . --tag ${name}:${tag} \
-                           --tag ${name}:${tag}-${now}
+            if (tag.length() == 0) {
+              tag = commit[0..7]
+            }
 
-            docker images
+            if (env.GIT_BRANCH != "master"){
+              tag = tag + "-" + env.GIT_BRANCH
+            }
 
-            docker rmi -f ${name}:${tag} ${name}:${tag}-${now}
-          """
+            println(name)
+            println(tag)
+            println(commit)
+
+            def build_name1 = name + ":" + tag
+            def build_name2 = name + ":" + tag + "-" + now
+
+            docker build . --tag build_name1 --tag build_name2
+
+            docker rmi -f build_name1 build_name2
+          }
         }
       }
     }
