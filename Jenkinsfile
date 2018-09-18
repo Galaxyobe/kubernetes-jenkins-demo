@@ -7,6 +7,9 @@ pipeline {
       yamlFile 'KubernetesPod.yaml'
     }
   }
+  options {
+    skipDefaultCheckout(true)
+  }
   environment {
     // get the project path from src
     // PROJECT_PATH = sh(returnStdout: true, script: 'basename ${GIT_URL} .git').trim()
@@ -23,6 +26,17 @@ pipeline {
     string(name: 'DOCKER_REPO', defaultValue: 'demo', description: 'docker registry repo kind')
   }
   stages {
+    stage('检出代码') {
+      steps {
+        checkout scm: [
+          $class: 'GitSCM',
+          branches: scm.branches,
+          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+          extensions: [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
+          userRemoteConfigs: scm.userRemoteConfigs,
+        ]
+      }
+    }
     stage('环境') {
       parallel {
         stage('Slave') {
