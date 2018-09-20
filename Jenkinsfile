@@ -160,8 +160,8 @@ pipeline {
               }
             } finally {
               tags.each {
-                  sh "docker rmi  ${it}"
-                }
+                sh "docker rmi ${name}:${it}"
+              }
             }
           }
         }
