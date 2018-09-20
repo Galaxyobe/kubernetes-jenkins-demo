@@ -149,8 +149,8 @@ pipeline {
             
             try {
               docker.withRegistry("https://docker.bb-app.cn", "docker.bb-app.cn") {
-                tags.each{
-                  it -> image.push(it)
+                tags.each {
+                  image.push(it)
                 }
 
                 if (env.GIT_BRANCH == "master"){
@@ -159,7 +159,7 @@ pipeline {
                 } 
               }
             } finally {
-              tags.each{
+              tags.each {
                   sh "docker rmi  ${it}"
                 }
             }
