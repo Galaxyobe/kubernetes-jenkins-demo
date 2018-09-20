@@ -32,4 +32,7 @@ spec:
   volumes:
   - name: docker-socket
     hostPath:
-      path: /var/run/docker.sock 
+      path: /var/run/docker.sock
+  - name: golang-pkg-mod
+    hostPath:
+      path: /data/golang/pkg/mod
