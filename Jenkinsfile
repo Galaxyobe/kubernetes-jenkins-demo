@@ -18,8 +18,9 @@ pipeline {
     NOW = sh(returnStdout: true, script: "date '+%Y%m%d%I%M'").trim()
   }
   parameters { 
-    string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'docker registry')
-    string(name: 'DOCKER_REPO', defaultValue: 'demo', description: 'docker registry repo kind')
+    string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.bb-app.cn', description: 'Docker镜像仓库')
+    string(name: 'DOCKER_REPO', defaultValue: 'demo', description: 'Docker镜像的类别')
+    booleanParam(name: 'PRINT_ENV_INFO', defaultValue: false, description: '显示运行的环境信息')
   }
   stages {
     stage('检出代码') {
@@ -46,6 +47,11 @@ pipeline {
       }
     }
     stage('环境') {
+      when {
+        expression {
+          params.PRINT_ENV_INFO == true
+        }
+      }
       parallel {
         stage('Slave') {
           steps {

@@ -7,7 +7,7 @@ metadata:
     chart: {{ include "helm.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    appVersion: {{ .Chart.AppVersion }}
+    appVersion: {{ .Values.image.tag }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -19,7 +19,7 @@ spec:
       labels:
         app: {{ include "helm.name" . }}
         release: {{ .Release.Name }}
-        appVersion: {{ .Chart.AppVersion }}
+        appVersion: {{ .Values.image.tag }}
     spec:
       {{- if .Values.image.pullSecrets }}
       imagePullSecrets:
